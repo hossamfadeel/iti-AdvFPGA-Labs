@@ -20,20 +20,39 @@ scripted TCL flows. Companion project repository:
 | `solution/run_all.sh` | Master runner: executes every machine-verifiable lab |
 | `solution/scripts/labXX_*/` | Per-lab code, TBs, TCL flows, run scripts |
 
-## Solution status (verified on AMD tools 2025.2, Windows, no board)
+## Solution status
 
-`./solution/run_all.sh` -- current result: **4 PASS, 0 FAIL** (labs 01, 02, 05, 08)
+**All 8 labs are solved**: every lab has complete solution artifacts (code,
+TBs, TCL flows), a step-by-step guide (`solution/LabXX_Solution_StepByStep.md`),
+and an answer key. Of those, **4 are machine-verified** on this toolchain
+(AMD tools 2025.2, Windows, no board) and **4 are bench/tool-bound by nature**
+-- complete, but they require hardware or tools this workstation does not
+have.
 
-| Lab | Machine-verified here | What ran | Needs |
-|-----|----------------------|----------|-------|
-| 01 DFX | **PASS** | Behavioral TB (xsim) AND **full DFX implementation flow on both KR260 (xck26) and ZCU102 (xczu9eg)**: 2 full + 2 partial bitstreams per board, `pr_verify` clean, partials byte-identical in size across RMs | board only for live swap |
-| 02 HLS | **PASS** | All four variants (V0-V3) csim (impulse + LCG vs golden) + csynth; measured DSE table (V3 = 236x faster) | -- |
-| 03 AXI DMA | bench | Complete bare-metal app (no ellipses) + BD + throughput harness | ZCU102 bench |
-| 04 Coherency | bench | Parts 1-3 staged code (break/fix/price, HPC0) | ZCU102 bench |
-| 05 Aurora | **PASS** | BERT logic in sim: 2002 words, injected corruption detected (2 error events), clean relock | board for GT soak |
-| 06 Vitis AI | bench | VART app + docker compile + board scripts | board + Docker |
-| 07 AIE/NoC | tool | Complete graph code + exact flow | workstation with aiecompiler |
-| 08 TCL | **PASS** | Real Vivado batch synth + WNS gate + CI example | -- |
+`./solution/run_all.sh` -- current result: **4 PASS, 0 FAIL**
+
+### Machine-verified here (4 of 8)
+
+| Lab | What ran | Evidence |
+|-----|----------|----------|
+| 01 DFX | Behavioral TB (xsim) AND **full DFX implementation flow on BOTH boards** -- `vivado -mode batch -source dfx_build.tcl -tclargs kr260\|zcu102` | RC:0 both; 2 full + 2 partial bitstreams per board; `pr_verify` "Verification completed successfully" x2; partials byte-identical in size across RMs (KR260: 677,900 B, ZCU102: 1,000,861 B) -- partial size is a pblock property (8.7% / 3.8% of full) |
+| 02 HLS | All four variants (V0-V3) csim (impulse + LCG vs golden) + csynth via `vitis-run` | All PASS; measured DSE table (V3 = 236x faster, II 275589 -> 1166) |
+| 05 Aurora | BERT logic in simulation (framer -> elastic channel -> checker) | 2002 words, injected corruption detected as exactly 2 error events (state-adoption semantics), clean relock |
+| 08 TCL | Real Vivado batch synth + WNS gate + CI example | `SYNTH DONE` + `PASS: all timing clean` |
+
+> KR260/ZCU102 DFX caveat: the offline flow uses auto-selected valid PL-bank
+> pins (flow validation). The bench run substitutes the real carrier
+> constraints -- ZCU102 master XDC / K26 SOM **XTP685** -- one clearly
+> marked file.
+
+### Complete artifacts, bench/tool-bound (4 of 8)
+
+| Lab | Why not executed here | What is ready |
+|-----|----------------------|---------------|
+| 03 AXI DMA | needs the ZCU102 platform on hardware | complete bare-metal `main.c` (zero ellipses), BD wiring table, throughput harness (4K/64K/1M), Part-5 disconnect predictions |
+| 04 Coherency | needs the Lab03 platform on hardware | parts 1-3 staged code (deterministic break / restore+price / HPC0 via CCI), maintenance timing loop |
+| 06 Vitis AI | needs board + Docker | minimal VART app, docker `vai_q`/`vai_c` compile script, board run script |
+| 07 AIE/NoC | `aiecompiler`/`aiesimulator` **verified absent** from the unified Vitis 2025.2 install on the reference workstation | complete 4-tile polyphase FIR graph (`adf`), impulse self-check stimulus, exact command flow |
 
 ## Running the solutions
 
