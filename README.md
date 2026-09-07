@@ -22,7 +22,7 @@ scripted TCL flows. Companion project repository:
 
 ## Solution status (verified on AMD tools 2025.2, Windows, no board)
 
-`./solution/run_all.sh` -- current result: **5 PASS, 0 FAIL**
+`./solution/run_all.sh` -- current result: **4 PASS, 0 FAIL** (labs 01, 02, 05, 08)
 
 | Lab | Machine-verified here | What ran | Needs |
 |-----|----------------------|----------|-------|
